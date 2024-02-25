@@ -1,0 +1,41 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    env_file: .env
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      LOG_PATH: /app/logs
+      DATASOURCE_URL: jdbc:mysql://db:${MYSQL_PORT}/${MYSQL_DATABASE}
+      DATASOURCE_USERNAME: ${MYSQL_USER}
+      DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app:delegated
+    depends_on:
+      - db
+    restart: always
+  db:
+    image: mysql:8.0
+    env_file: .env
+    environment:
+      MYSQL_ROOT_PASSWORD: '${MYSQL_ROOT_PASSWORD}'
+      MYSQL_DATABASE: '${MYSQL_DATABASE}'
+      MYSQL_USER: '${MYSQL_USER}'
+      MYSQL_PASSWORD: '${MYSQL_PASSWORD}'
+    ports:
+      - ${MYSQL_PORT_HOST}:${MYSQL_PORT}
+    volumes:
+      - db_data:/var/lib/mysql
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    env_file: .env
+    environment:
+      PMA_HOST: db
+    ports:
+      - "8081:80"
+    depends_on:
+      - db
+volumes:
+  db_data:
